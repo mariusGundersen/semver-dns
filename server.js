@@ -12,17 +12,26 @@ var services = [];
 
 var onMessage = function (request, response) {
   console.log('request from:', request.address);
+  console.log('question', request.question[0].name);
   
   var parts = request.question[0].name.split('.');
   if(parts.pop() === 'semver'){
     var name = parts.pop();
+    var minor = /^minor--(\d+)$/.exec(parts[0]);
+    if(minor){
+      parts[0] = '^'+minor[1];
+    }
+    var patch = /^patch--(\d+)$/.exec(parts[0]);
+    if(patch){
+      parts[0] = '~'+patch[1];
+    }
     var version = parts.join('.');
     console.log('looking for', name, version);
     
     var versions = services.filter(function(service){
       return service.name == name;
     });
-    
+     
     var found = semver.maxSatisfying(versions.map(function(version){return version.version;}), version);
     if(found){
       var record = versions.filter(function(version){return version.version == found})[0];
@@ -34,6 +43,7 @@ var onMessage = function (request, response) {
       }));
     }
   }
+  console.log(response.answer);
   response.send();
 };
 
@@ -90,7 +100,7 @@ server.on('listening', onListening);
 server.on('socketError', onSocketError);
 server.on('close', onClose);
 
-server.serve(53, '127.0.0.1');
+server.serve(53, '172.17.42.1');
 
 tcpserver.on('request', onMessage);
 tcpserver.on('error', onError);
@@ -98,4 +108,4 @@ tcpserver.on('listening', onListening);
 tcpserver.on('socketError', onSocketError);
 tcpserver.on('close', onClose);
 
-tcpserver.serve(53, '127.0.0.1');
+tcpserver.serve(53, '172.17.42.1');
