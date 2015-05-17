@@ -63,33 +63,44 @@ var onClose = function () {
   console.log('server closed', this.address());
 };
 
+
+function handleContainer(id, status){
+  docker.getContainer(id).inspect(function(err, result){
+    if(result.Config.Labels && 'SemVerDNS' in result.Config.Labels){
+      var parts = result.Config.Labels['SemVerDNS'].split('.');
+      if(parts.pop() == 'semver'){
+        var name = parts.pop();
+        var version = parts.join('.');
+        if(status == 'stop'){
+          console.log("stopped", name, version);
+          services.splice(services.indexOf(services.filter(function(service){
+            return service.name == name && service.version == version;
+          })[0]), 1);
+        }else if(status  == 'start'){
+          console.log("started", name, version);
+          services.push({
+            name: name,
+            version: version,
+            ip: result.NetworkSettings.IPAddress
+          });
+        }
+      }
+    }
+  });
+}
+
+docker.listContainers(function (err, containers) {
+  containers.forEach(function (containerInfo) {
+    handleContainer(containerInfo.Id, 'start');
+  });
+});
+
 docker.getEvents(function(err, data){
   data.on('data', function(c){
     var event = JSON.parse(c.toString()); 
     console.log(event);
     if(event.status == 'start' || event.status == 'stop'){
-      docker.getContainer(event.id).inspect(function(err, result){
-        if(result.Config.Labels && 'SemVerDNS' in result.Config.Labels){
-          var parts = result.Config.Labels['SemVerDNS'].split('.');
-          if(parts.pop() == 'semver'){
-            var name = parts.pop();
-            var version = parts.join('.');
-            if(event.status == 'stop'){
-              console.log("stopped", name, version);
-              services.splice(services.indexOf(services.filter(function(service){
-                return service.name == name && service.version == version;
-              })[0]), 1);
-            }else if(event.status  == 'start'){
-              console.log("started", name, version);
-              services.push({
-                name: name,
-                version: version,
-                ip: result.NetworkSettings.IPAddress
-              });
-            }
-          }
-        }
-      });
+      handleContainer(event.id, event.status);
     }
   });
 });
