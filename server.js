@@ -50,7 +50,7 @@ server.on('listening', dnsServer.onListening);
 server.on('socketError', dnsServer.onSocketError);
 server.on('close', dnsServer.onClose);
 
-server.serve(53, '172.17.42.1');
+server.serve(53);
 
 tcpServer.on('request', dnsServer.onMessage.bind(dnsServer));
 tcpServer.on('error', dnsServer.onError);
@@ -58,8 +58,8 @@ tcpServer.on('listening', dnsServer.onListening);
 tcpServer.on('socketError', dnsServer.onSocketError);
 tcpServer.on('close', dnsServer.onClose);
 
-tcpServer.serve(53, '172.17.42.1');
+tcpServer.serve(53);
 
-process.on('SIGINT', function(){
-  process.exit(0);
+process.on('SIGTERM', function(){
+  process.exit(1);
 })
