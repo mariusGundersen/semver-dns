@@ -17,7 +17,7 @@ Run using docker:
 
 ```
 DNS_CID=$(docker run -d -v /var/run/docker.sock:/var/run/docker.sock mariusgundersen/semver-dns)
-DNS_IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $DNS_IP)
+DNS_IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $DNS_CID)
 ```
 
 Containers that are started and stopped while it is running will be automatically added and removed to the DNS record list.
