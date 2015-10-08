@@ -1,3 +1,3 @@
-FROM node:4.0.0-onbuild
+FROM node:4.1-onbuild
 
 EXPOSE 53

@@ -1,9 +1,9 @@
 
 module.exports = function getServiceInfo(result){
   var id = result.Id;
-  var service = result.Config.Labels 
-    && 'SemVerDNS' in result.Config.Labels 
-    && result.Config.Labels['SemVerDNS']
+  var service = result.Config.Hostname
+    && /.+\.semver$/.test(result.Config.Hostname)
+    && result.Config.Hostname
     || '..';
   var ip = result.NetworkSettings.IPAddress;
   var path = service.split('.');
